@@ -6,11 +6,15 @@ document.getElementById('btn-to-canvas')
     document.body.appendChild(canvas);
   });
 
+document.getElementById('btn-to-image')
+  .addEventListener('click', function (e) {
+    var image = prybar.toImage();
+    document.body.appendChild(image);
+  });
+
 document.getElementById('btn-export-png')
   .addEventListener('click', function (e) {
-    var canvas = prybar.toCanvas(),
-        dataURL = canvas.toDataURL('image/png');
-    window.open(dataURL);
+    prybar.exportPng('exported_plot.png');
   });
 
 document.getElementById('btn-export-svg')
