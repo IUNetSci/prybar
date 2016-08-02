@@ -78,20 +78,23 @@ function Prybar(selector){
     return canvas
   }
 
-  function svgToCanvas(){
+  function svgToSource(){
     var svg = cloneSvg(),
-    canvas = initCanvas(),
-    ctx = canvas.getContext('2d');
+        serializer = new XMLSerializer();
+    return serializer.serializeToString(svg)
+  }
 
-    var serializer = new XMLSerializer(),
-    svgSource = serializer.serializeToString(svg),
-    svgBlob = new Blob([svgSource], {type: 'image/svg+xml;charset=utf-8'});
+  function svgToCanvas(){
+    var svgSource = svgToSource(),
+        svgBlob = new Blob([svgSource], {type: 'image/svg+xml;charset=utf-8'}),
+        canvas = initCanvas(),
+        ctx = canvas.getContext('2d');
 
     console.log(svgBlob, svgSource);
 
     var DOMURL = window.URL || window.webkitURL || window,
-    objURL = DOMURL.createObjectURL(svgBlob),
-    img = new Image();
+        objURL = DOMURL.createObjectURL(svgBlob),
+        img = new Image();
 
     img.onload = function(){
       ctx.drawImage(img, 0, 0);
@@ -102,9 +105,16 @@ function Prybar(selector){
     return canvas
   }
 
+  /********************/
+  /* Public interface */
+  /********************/
+
   this.selector = selector;
 
+  // Rename this? Like, selectSvg?
   this.getSvg = getSvg;
+
+  this.toSource = svgToSource;
 
   this.toCanvas = svgToCanvas;
 
@@ -135,5 +145,20 @@ function Prybar(selector){
     $window = window.open(downloadURL);
     //$window.document.write('<img src="' + downloadURL + '"/>');
     */
+  }
+
+  this.exportSvg = function(filename){
+    var svgSource = svgToSource(),
+        dataURL = 'data:image/svg+xml;charset=utf-8,' +
+          encodeURIComponent(svgSource);
+
+    // I think this method only works in Chrome
+    var $download = document.createElement('a');
+    $download.setAttribute('href', dataURL);
+    $download.setAttribute('download', filename);
+    $download.style.display = 'none';
+    document.body.appendChild($download);
+    $download.click();
+    document.body.removeChild($download);
   }
 }
