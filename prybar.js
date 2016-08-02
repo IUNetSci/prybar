@@ -197,6 +197,24 @@ function Prybar(selector){
           downloadDataURL(objectURL, filename);
         });
       });
+    } else if (method == 6){
+      // Combination of window.open + blobURL
+      // Doesn't trigger popup blockers.
+      // Works in Chrome, not really FF
+      // Probably should use a whole page template w/ html doctype, etc.
+      // Can check if window has already been opened
+      var $plotWindow = window.open('', 'ExportedPlotWindow');
+      drawCanvas(function(canvas){
+        canvas.toBlob(function(blob){
+          var DOMURL = window.URL || window.webkitURL || window,
+              objectURL = DOMURL.createObjectURL(blob);
+          $plotWindow.document.write('<body>');
+          $plotWindow.document.write('<img src="' + objectURL + '"/>');
+          $plotWindow.document.write(
+              '<p>Right click on the image above and select "Save image as..."</p>');
+          $plotWindow.document.write('</body>');
+        });
+      })
     } // endif
   }
 
