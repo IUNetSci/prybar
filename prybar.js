@@ -5,6 +5,8 @@ function Prybar(selector){
   }
 
   function cloneSvg(){
+    // Adapted from SVG Crowbar
+    // https://github.com/NYTimes/svg-crowbar/blob/gh-pages/svg-crowbar-2.js
 
     function copyWithStyle(oNode, cNode) {
       if (oNode && oNode.hasChildNodes()) {
@@ -118,6 +120,9 @@ function Prybar(selector){
 
   this.toCanvas = svgToCanvas;
 
+  // Maybe expose a toDataURL(mimetype) that works like canvas?
+  this.toDataURL = function(mimetype){ }
+
   this.exportPng = function(){
     var canvas = svgToCanvas(),
         dataURL = canvas.toDataURL('image/png');
@@ -153,6 +158,7 @@ function Prybar(selector){
           encodeURIComponent(svgSource);
 
     // I think this method only works in Chrome
+    // It does work in FF 47
     var $download = document.createElement('a');
     $download.setAttribute('href', dataURL);
     $download.setAttribute('download', filename);
