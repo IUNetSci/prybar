@@ -109,10 +109,12 @@ function Prybar(selector){
   this.exportPng = function(){
     var canvas = svgToCanvas(),
         dataURL = canvas.toDataURL('image/png');
+    console.log(dataURL);
 
     //canvas.setAttribute('id', '_pb-canvas');
     //document.body.appendChild(canvas);
 
+    /*
     var $download = document.createElement('a');
     $download.setAttribute('style', 'display:none');
     $download.setAttribute('href', dataURL);
@@ -120,6 +122,8 @@ function Prybar(selector){
     document.body.appendChild($download);
     $download.click();
     document.body.removeChild($download);
+    */
+    window.open(dataURL);
 
     /*
     console.log(dataURL);

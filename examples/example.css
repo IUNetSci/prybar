@@ -4,14 +4,14 @@
   fill: none;
 }
 
-.stroke-red{
-  stroke: red;
+.stroke-green{
+  stroke: green;
   stroke-width: 3;
   fill: none;
 }
 
-.stroke-red{
-  stroke: red;
-  stroke-width: 3;
+.stroke-blue{
+  stroke: blue;
+  stroke-width: 5;
   fill: none;
 }
