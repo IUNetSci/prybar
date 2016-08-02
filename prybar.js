@@ -106,6 +106,8 @@ function Prybar(selector){
 
   this.getSvg = getSvg;
 
+  this.toCanvas = svgToCanvas;
+
   this.exportPng = function(){
     var canvas = svgToCanvas(),
         dataURL = canvas.toDataURL('image/png');
