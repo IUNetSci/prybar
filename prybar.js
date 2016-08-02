@@ -49,10 +49,14 @@ function Prybar(selector){
           svg: "http://www.w3.org/2000/svg"
         },
         svgOrig = getSvg(),
-        svgCopy = window.document.createElementNS(prefix.svg, 'svg'),
+        //svgCopy = window.document.createElementNS(prefix.svg, 'svg'),
+        svgCopy = svgOrig.cloneNode();
         svgDeclarationComputed = getComputedStyle(svgOrig);
 
-    svgCopy.setAttribute("version", "1.1");
+    // svgCopy.setAttribute('width', svgOrig.getAttribute('width'))
+    // svgCopy.setAttribute('height', svgOrig.getAttribute('height'))
+    // svgCopy.setAttribute("version", "1.1");
+
     svgCopy.removeAttribute("xmlns");
     svgCopy.removeAttribute("xlink");
 
@@ -95,9 +99,6 @@ function Prybar(selector){
         callback(canvas);
       }
       DOMURL.revokeObjectURL(objURL);
-      console.log('svg blob size: ' + svgBlob.size);
-      console.log('png data length: ' + canvas.toDataURL().length);
-      canvas.toBlob(function(b){ console.log('png blob size: ' + b.size) });
     }
     img.src = objURL;
 
@@ -154,31 +155,12 @@ function Prybar(selector){
 
   this.exportPng = function(filename, method){
     if (method <= 1){
-      // Works in Chrome, not really FF
       drawCanvas(function(canvas){
         var dataURL = canvas.toDataURL('image/png');
         downloadDataURL(dataURL, filename);
       });
     } else if (method == 2){
-      // Works, but triggers popup blocking
-      // Works in Chrome, not really FF
-      drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        window.open(dataURL, 'ExportedPlotWindow', '');
-      });
-    } else if (method == 3){
-      // This method sucks; filename doesn't really work
-      drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        var dlMimetype = 'application/octet-stream;' +
-          'headers=Content-Disposition%3A%20attachment%3B%20filename=' +
-          filename;
-        var downloadURL = dataURL.replace('image/png', dlMimetype);
-        window.open(downloadURL);
-      });
-    } else if (method == 4){
       // Surprisingly doesn't trigger popup blockers.
-      // Works in Chrome, not really FF
       // Probably should use a whole page template w/ html doctype, etc.
       // Can check if window has already been opened
       var $plotWindow = window.open('', 'ExportedPlotWindow');
@@ -190,8 +172,23 @@ function Prybar(selector){
             '<p>Right click on the image above and select "Save image as..."</p>');
         $plotWindow.document.write('</body>');
       })
+    } else if (method == 3){
+      // This method sucks; filename doesn't really work
+      drawCanvas(function(canvas){
+        var dataURL = canvas.toDataURL('image/png');
+        var dlMimetype = 'application/octet-stream;' +
+          'headers=Content-Disposition%3A%20attachment%3B%20filename=' +
+          filename;
+        var downloadURL = dataURL.replace('image/png', dlMimetype);
+        window.open(downloadURL);
+      });
+    } else if (method == 4){
+      // Works, but triggers popup blocking
+      drawCanvas(function(canvas){
+        var dataURL = canvas.toDataURL('image/png');
+        window.open(dataURL, 'ExportedPlotWindow', '');
+      });
     } else if (method == 5){
-      // Works in Chrome, not really FF
       // Not sure if better than using dataURL
       drawCanvas(function(canvas){
         canvas.toBlob(function(blob){
@@ -202,8 +199,6 @@ function Prybar(selector){
       });
     } else if (method == 6){
       // Combination of window.open + blobURL
-      // Doesn't trigger popup blockers.
-      // Works in Chrome, not really FF
       // Probably should use a whole page template w/ html doctype, etc.
       // Can check if window has already been opened
       var $plotWindow = window.open('', 'ExportedPlotWindow');
@@ -218,11 +213,22 @@ function Prybar(selector){
           $plotWindow.document.write('</body>');
         });
       })
+    } else if (method == 7){
+      // Works, but triggers popup blocking
+      // Not sure if better than using dataURL
+      drawCanvas(function(canvas){
+        canvas.toBlob(function(blob){
+          var DOMURL = window.URL || window.webkitURL || window,
+              objectURL = DOMURL.createObjectURL(blob);
+          window.open(objectURL, 'ExportedPlotWindow', '');
+        });
+      });
     } // endif
   }
 
   this.exportSvg = function(filename){
     var svgSource = svgToSource(),
+        // This could also be done with Blob * ObjectURL
         dataURL = 'data:image/svg+xml;charset=utf-8,' +
           encodeURIComponent(svgSource);
 
@@ -230,14 +236,6 @@ function Prybar(selector){
       filename += '.svg';
     }
 
-    // I think this method only works in Chrome
-    // It does work in FF 47
-    var $download = document.createElement('a');
-    $download.setAttribute('href', dataURL);
-    $download.setAttribute('download', filename);
-    $download.style.display = 'none';
-    document.body.appendChild($download);
-    $download.click();
-    document.body.removeChild($download);
+    downloadDataURL(dataURL, filename);
   }
 }
