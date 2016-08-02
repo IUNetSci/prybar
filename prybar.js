@@ -1,3 +1,22 @@
+// Polyfill for Blob constructor
+var NewBlob = function(data, datatype){
+  var blob;
+  try{
+    blob = new Blob([data], {type: datatype});
+  } catch (err) {
+    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                         window.MozBlobBuilder || window.MSBlobBuilder;
+    if (window.BlobBuilder){
+      var bb = new BlobBuilder();
+      bb.append(data);
+      out = bb.getBlob(datatype);
+    } else {
+      throw err;
+    }
+  }
+  return blob
+}
+
 function Prybar(selector){
 
   function getSvg(){
@@ -86,7 +105,7 @@ function Prybar(selector){
 
   function drawCanvas(callback){
     var svgSource = svgToSource(),
-        svgBlob = new Blob([svgSource], {type: 'image/svg+xml;charset=utf-8'}),
+        svgBlob = NewBlob(svgSource, 'image/svg+xml;charset=utf-8'),
         canvas = initCanvas(),
         ctx = canvas.getContext('2d'),
         DOMURL = window.URL || window.webkitURL || window,
@@ -123,14 +142,68 @@ function Prybar(selector){
     return serializer.serializeToString(svg)
   }
 
+  function dataURLtoBlob(dataURL){
+    // c.f. https://github.com/blueimp/JavaScript-Canvas-to-Blob
+    var dataURLPattern = /^data:((.*?)(;charset=.*?)?)(;base64)?,/,
+        matches = dataURL.match(dataURLPattern),
+        mediaType = matches[2] ? matches[1] :
+          'text/plain' + (matches[3] || ';charset=US-ASCII'),
+        isBase64 = !!matches[4],
+        dataString = dataURL.slice(matches[0].length),
+        byteString = (isBase64 ? atob : decodeURIComponent)(dataString),
+        arrayBuffer = new ArrayBuffer(byteString.length),
+        intArray = new Uint8Array(arrayBuffer);
+    for (i = 0; i < byteString.length; i += 1) {
+      intArray[i] = byteString.charCodeAt(i)
+    }
+    // Write the ArrayBuffer (or ArrayBufferView) to a blob:
+    var hasArrayBufferViewSupport = (typeof(Blob) !== 'undefined') &&
+      window.Uint8Array &&
+      (function () {
+        try {
+          return new Blob([new Uint8Array(100)]).size === 100
+        } catch (e) {
+          return false
+        }
+      }());
+    return NewBlob(hasArrayBufferViewSupport ? intArray : arrayBuffer, mediaType)
+  }
+
   function downloadDataURL(dataURL, filename){
-    var $download = document.createElement('a');
-    $download.setAttribute('style', 'display:none');
-    $download.setAttribute('href', dataURL);
-    $download.setAttribute('download', filename);
-    document.body.appendChild($download);
-    $download.click();
-    document.body.removeChild($download);
+    if (navigator.msSaveBlob){
+      var blob = dataURLtoBlob(dataURL);
+      navigator.msSaveBlob(blob, filename);
+    } else {
+      var $download = document.createElement('a');
+      $download.setAttribute('style', 'display:none');
+      $download.setAttribute('href', dataURL);
+      $download.setAttribute('download', filename);
+      document.body.appendChild($download);
+      $download.click();
+      document.body.removeChild($download);
+    }
+  }
+
+  var $plotWindow;
+  function popoutDataURL(dataURL){
+    // Probably want a more complete HTML template here
+    $plotWindow = window.open('', 'ExportedPlotWindow');
+    $plotWindow.document.write('<body>');
+    $plotWindow.document.write('<img src="' + dataURL + '"/>');
+    $plotWindow.document.write(
+        '<p>Right click on the image above and select "Save image as..."</p>');
+    $plotWindow.document.write('</body>');
+  }
+
+  function exportDataURL(dataURL, filename){
+    try {
+      downloadDataURL(dataURL, filename);
+    } catch (err) {
+      console.warn("Prybar: Caught error '" + err + "' downloading file." +
+          ' Attempting pop-out.');
+      popoutDataURL(dataURL);
+      // throw err
+    }
   }
 
   /********************/
@@ -153,77 +226,55 @@ function Prybar(selector){
 
   // Exporters
 
-  this.exportPng = function(filename, method){
-    if (method <= 1){
+  this.exportPng = function(filename, options){
+    try {
+      NewBlob();
+    } catch (err) {
+      throw 'No Blob support present; PNG export is disabled.'
+    }
+
+    var exportData = exportDataURL;
+    if (options && options.exporter){
+      var exporter = options.exporter;
+      if (typeof(exporter === 'function')){
+        exportData = options.exporter;
+      } else if (exporter.toLowerCase && exporter.toLowerCase() == 'download'){
+        exportData = downloadDataURL;
+      } else if (exporter.toLowerCase && exporter.toLowerCase() == 'popout'){
+        exportData = popoutDataURL;
+      }
+    }
+
+    var useCanvg = (options && options.converter && options.converter.toLowerCase &&
+                    options.converter.toLowerCase() == 'canvg');
+
+    function exportCanvas(canvas){
+      var dataURL = canvas.toDataURL('image/png');
+      exportData(dataURL, filename);
+    }
+
+    function exportCanvg(){
+      var canvas = initCanvas(),
+          svgSource = svgToSource();
+      canvg(canvas, svgSource);
+      exportCanvas(canvas);
+    }
+
+    function exportNative(){
       drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        downloadDataURL(dataURL, filename);
+        try {
+          exportCanvas(canvas)
+        } catch (err) {
+          console.warn("Prybar: Caught error '" + err +
+              "' in native canvas.toDataURL. Using canvg as a fallback.");
+          exportCanvg();
+          //throw err
+        }
       });
-    } else if (method == 2){
-      // Surprisingly doesn't trigger popup blockers.
-      // Probably should use a whole page template w/ html doctype, etc.
-      // Can check if window has already been opened
-      var $plotWindow = window.open('', 'ExportedPlotWindow');
-      drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        $plotWindow.document.write('<body>');
-        $plotWindow.document.write('<img src="' + dataURL + '"/>');
-        $plotWindow.document.write(
-            '<p>Right click on the image above and select "Save image as..."</p>');
-        $plotWindow.document.write('</body>');
-      })
-    } else if (method == 3){
-      // This method sucks; filename doesn't really work
-      drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        var dlMimetype = 'application/octet-stream;' +
-          'headers=Content-Disposition%3A%20attachment%3B%20filename=' +
-          filename;
-        var downloadURL = dataURL.replace('image/png', dlMimetype);
-        window.open(downloadURL);
-      });
-    } else if (method == 4){
-      // Works, but triggers popup blocking
-      drawCanvas(function(canvas){
-        var dataURL = canvas.toDataURL('image/png');
-        window.open(dataURL, 'ExportedPlotWindow', '');
-      });
-    } else if (method == 5){
-      // Not sure if better than using dataURL
-      drawCanvas(function(canvas){
-        canvas.toBlob(function(blob){
-          var DOMURL = window.URL || window.webkitURL || window,
-              objectURL = DOMURL.createObjectURL(blob);
-          downloadDataURL(objectURL, filename);
-        });
-      });
-    } else if (method == 6){
-      // Combination of window.open + blobURL
-      // Probably should use a whole page template w/ html doctype, etc.
-      // Can check if window has already been opened
-      var $plotWindow = window.open('', 'ExportedPlotWindow');
-      drawCanvas(function(canvas){
-        canvas.toBlob(function(blob){
-          var DOMURL = window.URL || window.webkitURL || window,
-              objectURL = DOMURL.createObjectURL(blob);
-          $plotWindow.document.write('<body>');
-          $plotWindow.document.write('<img src="' + objectURL + '"/>');
-          $plotWindow.document.write(
-              '<p>Right click on the image above and select "Save image as..."</p>');
-          $plotWindow.document.write('</body>');
-        });
-      })
-    } else if (method == 7){
-      // Works, but triggers popup blocking
-      // Not sure if better than using dataURL
-      drawCanvas(function(canvas){
-        canvas.toBlob(function(blob){
-          var DOMURL = window.URL || window.webkitURL || window,
-              objectURL = DOMURL.createObjectURL(blob);
-          window.open(objectURL, 'ExportedPlotWindow', '');
-        });
-      });
-    } // endif
+    }
+
+    useCanvg ? exportCanvg() : exportNative();
+
   }
 
   this.exportSvg = function(filename){
@@ -236,6 +287,6 @@ function Prybar(selector){
       filename += '.svg';
     }
 
-    downloadDataURL(dataURL, filename);
+    exportDataURL(dataURL, filename);
   }
 }

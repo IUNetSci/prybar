@@ -39,14 +39,15 @@
       <button id="btn-to-canvas">To Canvas</button>
       <button id="btn-to-image">To Image</button>
       <button id="btn-export-png">Export PNG</button>
-      <input type="range" id="export-png-method" min="1" max="7" value="1"
-        onchange="document.getElementById('export-png-method-label').innerText
-        = this.value" />
-      <label for="export-png-method" id="export-png-method-label">1</label>
       <button id="btn-export-svg">Export SVG</button>
     </div> <!-- .button-bar -->
   </div> <!-- .container -->
 
+  <!--
+	<script type="text/javascript" src="../canvg/rgbcolor.js"></script>
+	<script type="text/javascript" src="../canvg/canvg.js"></script>
+  -->
+  <script src="../canvg.min.js" async defer></script>
   <script src='../prybar.js'></script>
   <script src='example.js'></script>
 </body>

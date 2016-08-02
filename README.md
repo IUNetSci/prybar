@@ -13,5 +13,7 @@ Export SVG images from the web as .png or .svg files. Adapted from
 
 ## Browser support
 
-* Chrome
+* Chrome (versions?)
 * Firefox (42+?)
+* IE10+
+* IE9 (SVG export only)
