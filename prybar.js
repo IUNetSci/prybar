@@ -95,6 +95,9 @@ function Prybar(selector){
         callback(canvas);
       }
       DOMURL.revokeObjectURL(objURL);
+      console.log('svg blob size: ' + svgBlob.size);
+      console.log('png data length: ' + canvas.toDataURL().length);
+      canvas.toBlob(function(b){ console.log('png blob size: ' + b.size) });
     }
     img.src = objURL;
 
