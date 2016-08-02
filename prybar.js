@@ -236,7 +236,7 @@ function Prybar(selector){
     var exportData = exportDataURL;
     if (options && options.exporter){
       var exporter = options.exporter;
-      if (typeof(exporter === 'function')){
+      if (typeof(exporter) === 'function'){
         exportData = options.exporter;
       } else if (exporter.toLowerCase && exporter.toLowerCase() == 'download'){
         exportData = downloadDataURL;
