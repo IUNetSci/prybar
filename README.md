@@ -17,3 +17,9 @@ Export SVG images from the web as .png or .svg files. Adapted from
 * Firefox (42+?)
 * IE10+
 * IE9 (SVG export only)
+
+## TODO
+
+* Examples; gh-pages
+* Bower
+* Minification workflow
