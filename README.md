@@ -18,8 +18,14 @@ Export SVG images from the web as .png or .svg files. Adapted from
 * IE10+
 * IE9 (SVG export only)
 
+## Bundle & minify
+``` bash
+$ uglifyjs canvg/rgbcolor.js canvg/canvg.js prybar.js -c -m > prybar.all.min.js
+```
+
 ## TODO
 
-* Examples; gh-pages
+* Finish example
+* gh-pages
 * Bower
-* Minification workflow
+* Grunt
