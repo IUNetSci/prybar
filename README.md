@@ -27,5 +27,6 @@ $ uglifyjs -c -m -r "prybar" canvg/rgbcolor.js canvg/canvg.js prybar.js > prybar
 
 * Finish example
 * gh-pages
+* Safari support?
 * Bower
 * Grunt
