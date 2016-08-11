@@ -20,7 +20,7 @@ Export SVG images from the web as .png or .svg files. Adapted from
 
 ## Bundle & minify
 ``` bash
-$ uglifyjs canvg/rgbcolor.js canvg/canvg.js prybar.js -c -m > prybar.all.min.js
+$ uglifyjs -c -m -r "prybar" canvg/rgbcolor.js canvg/canvg.js prybar.js > prybar.all.min.js
 ```
 
 ## TODO
