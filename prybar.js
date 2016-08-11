@@ -214,37 +214,55 @@ function Prybar(selector){
       throw 'No Blob support present; PNG export is disabled.'
     }
 
-    var exportData = exportDataURL;
-    if (options && options.exporter){
-      var exporter = options.exporter;
-      if (typeof(exporter) === 'function'){
-        exportData = options.exporter;
-      } else if (exporter.toLowerCase && exporter.toLowerCase() == 'download'){
-        exportData = downloadDataURL;
-      } else if (exporter.toLowerCase && exporter.toLowerCase() == 'popout'){
-        exportData = popoutDataURL;
-      }
+    // Default options, get overridden by supplied options
+    var myOptions = {
+      // default export method is to try download, with popout as fallback
+      exporter: exportDataURL,
+      bg: null,
+      converter: null,
+    };
+
+    Object.assign(myOptions, options);
+
+    var dataExporter;
+    if (typeof(myOptions.exporter) === 'function'){
+      dataExporter = myOptions.exporter;
+    } else if (myOptions.exporter.toLowerCase &&
+               myOptions.exporter.toLowerCase() == 'download'){
+      dataExporter = downloadDataURL;
+    } else if (myOptions.exporter.toLowerCase &&
+               myOptions.exporter.toLowerCase() == 'popout'){
+      dataExporter = popoutDataURL;
+    } else {
+      throw "Invalid value for 'exporter': " + myOptions.exporter;
     }
 
-    var useCanvg = (options && options.converter && options.converter.toLowerCase &&
-                    options.converter.toLowerCase() == 'canvg');
+    var useCanvg = (myOptions.converter &&
+                    myOptions.converter.toLowerCase &&
+                    myOptions.converter.toLowerCase() == 'canvg');
 
-    function exportCanvas(canvas){
+    function _exportCanvas(canvas){
+      if (myOptions.bg && typeof(myOptions.bg) === 'string'){
+        var ctx = canvas.getContext('2d');
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = myOptions.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       var dataURL = canvas.toDataURL('image/png');
-      exportData(dataURL, filename);
+      dataExporter(dataURL, filename);
     }
 
     function exportCanvg(){
       var canvas = initCanvas(),
           svgSource = svgToSource();
       canvg(canvas, svgSource);
-      exportCanvas(canvas);
+      _exportCanvas(canvas);
     }
 
     function exportNative(){
       drawCanvas(function(canvas){
         try {
-          exportCanvas(canvas)
+          _exportCanvas(canvas);
         } catch (err) {
           console.warn("Prybar: Caught error '" + err +
               "' in native canvas.toDataURL. Using canvg as a fallback.");

@@ -14,7 +14,7 @@ document.getElementById('btn-to-image')
 
 document.getElementById('btn-export-png')
   .addEventListener('click', function (e) {
-    prybar.exportPng('exported_plot.png');
+    prybar.exportPng('exported_plot.png', {bg: 'white'});
   });
 
 document.getElementById('btn-export-svg')
