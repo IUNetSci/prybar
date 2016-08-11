@@ -1,22 +1,3 @@
-// Polyfill for Blob constructor
-var NewBlob = function(data, datatype){
-  var blob;
-  try{
-    blob = new Blob([data], {type: datatype});
-  } catch (err) {
-    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
-                         window.MozBlobBuilder || window.MSBlobBuilder;
-    if (window.BlobBuilder){
-      var bb = new BlobBuilder();
-      bb.append(data);
-      out = bb.getBlob(datatype);
-    } else {
-      throw err;
-    }
-  }
-  return blob
-}
-
 function Prybar(selector){
 
   function getSvg(){
@@ -290,3 +271,41 @@ function Prybar(selector){
     exportDataURL(dataURL, filename);
   }
 }
+
+// Polyfill for Blob constructor
+var NewBlob = function(data, datatype){
+  var blob;
+  try{
+    blob = new Blob([data], {type: datatype});
+  } catch (err) {
+    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                         window.MozBlobBuilder || window.MSBlobBuilder;
+    if (window.BlobBuilder){
+      var bb = new BlobBuilder();
+      bb.append(data);
+      out = bb.getBlob(datatype);
+    } else {
+      throw err;
+    }
+  }
+  return blob
+}
+
+Object.assign = Object.assign || function(target) {
+  if (target == null) {
+    throw new TypeError('Cannot convert undefined or null to object');
+  }
+
+  target = Object(target);
+  for (var index = 1; index < arguments.length; index++) {
+    var source = arguments[index];
+    if (source != null) {
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+  }
+  return target;
+};
