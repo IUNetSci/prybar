@@ -1,4 +1,6 @@
+// The Prybar constructor takes either a query selector or a DOM element
 prybar = new Prybar('#svg-example');
+// prybar = new Prybar(document.querySelector('#svg-example'));
 
 document.getElementById('btn-to-canvas')
   .addEventListener('click', function (e) {

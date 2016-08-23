@@ -1,7 +1,12 @@
 function Prybar(selector){
+  var self = this;
 
   function getSvg(){
-    return document.querySelector(selector)
+    if (typeof(self.selector) === 'string'){
+      return document.querySelector(self.selector);
+    } else {
+      return self.selector;
+    }
   }
 
   function cloneSvg(){
@@ -48,7 +53,7 @@ function Prybar(selector){
           xlink: "http://www.w3.org/1999/xlink",
           svg: "http://www.w3.org/2000/svg"
         },
-        svgOrig = getSvg(),
+        svgOrig = self.getSvg(),
         //svgCopy = window.document.createElementNS(prefix.svg, 'svg'),
         svgCopy = svgOrig.cloneNode();
         svgDeclarationComputed = getComputedStyle(svgOrig);
@@ -74,7 +79,7 @@ function Prybar(selector){
   }
 
   function initCanvas(){
-    var svg = getSvg(),
+    var svg = self.getSvg(),
         svgBBox = svg.getBoundingClientRect(),
         canvas = document.createElement('canvas');
 
