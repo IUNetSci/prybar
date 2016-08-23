@@ -38,6 +38,30 @@
     <div class="button-bar">
       <button id="btn-to-canvas">To Canvas</button>
       <button id="btn-to-image">To Image</button>
+      <div class="export-options" style="margin: 16px;">
+        <div>
+          Export method:
+          <label for="rad-download">
+            <input type="radio" name="exporter" id="rad-download" value="download" checked>
+            download
+          </label>
+          <label for="rad-popout">
+            <input type="radio" name="exporter" id="rad-popout" value="popout">
+            popout
+          </label>
+        </div>
+        <div>
+          Converter (png only):
+          <label for="rad-native">
+            <input type="radio" name="converter" id="rad-native" value="native" checked>
+            native
+          </label>
+          <label for="rad-canvg">
+            <input type="radio" name="converter" id="rad-canvg" value="canvg">
+            canvg
+          </label>
+        </div>
+      </div>
       <button id="btn-export-png">Export PNG</button>
       <button id="btn-export-svg">Export SVG</button>
     </div> <!-- .button-bar -->

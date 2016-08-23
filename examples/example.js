@@ -2,6 +2,15 @@
 prybar = new Prybar('#svg-example');
 // prybar = new Prybar(document.querySelector('#svg-example'));
 
+function getExportOptions(){
+  return {
+    // defaults to download
+    exporter: (document.querySelector('#rad-popout').checked ? 'popout': null),
+    // defaults to native
+    converter: (document.querySelector('#rad-canvg').checked ? 'canvg' : null)
+  }
+}
+
 document.getElementById('btn-to-canvas')
   .addEventListener('click', function (e) {
     var canvas = prybar.toCanvas();
@@ -16,10 +25,15 @@ document.getElementById('btn-to-image')
 
 document.getElementById('btn-export-png')
   .addEventListener('click', function (e) {
-    prybar.exportPng('exported_plot.png', {bg: 'white'});
+    var opts = getExportOptions();
+    opts.bg = 'white';
+    console.log('exportPng', opts);
+    prybar.exportPng('exported_plot.png', opts);
   });
 
 document.getElementById('btn-export-svg')
   .addEventListener('click', function (e) {
-    prybar.exportSvg('exported_plot.svg');
+    var opts = getExportOptions();
+    console.log('exportSvg', opts);
+    prybar.exportSvg('exported_plot.svg', opts);
   });
