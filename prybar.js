@@ -278,7 +278,27 @@ function Prybar(selector){
   }
 
 
-  function exportSvg(filename){
+  function exportSvg(filename, options){
+    /*
+     * The option parsing here is not DRY. There needs to be an Exporter
+     * prototype that the different filetypes inherit from.
+    */
+    var dataExporter;
+    if (!options.exporter){
+      // default is to use exportDataURL which tries download with popout as a
+      // fallback
+      dataExporter = exportDataURL;
+    } else if (typeof(options.exporter) === 'function'){
+      dataExporter = options.exporter;
+    } else if (options.exporter.toLowerCase &&
+               options.exporter.toLowerCase() == 'download'){
+      dataExporter = downloadDataURL;
+    } else if (options.exporter.toLowerCase &&
+               options.exporter.toLowerCase() == 'popout'){
+      dataExporter = popoutDataURL;
+    } else {
+      throw "Invalid value for 'exporter': " + options.exporter;
+    }
     var svgSource = svgToSource(),
         // This could also be done with Blob * ObjectURL
         dataURL = 'data:image/svg+xml;charset=utf-8,' +
@@ -288,7 +308,7 @@ function Prybar(selector){
       filename += '.svg';
     }
 
-    exportDataURL(dataURL, filename);
+    dataExporter(dataURL, filename);
   }
 
 
