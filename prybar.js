@@ -1,6 +1,7 @@
 function Prybar(selector){
   var self = this;
 
+
   function getSvg(){
     if (typeof(self.selector) === 'string'){
       return document.querySelector(self.selector);
@@ -8,6 +9,7 @@ function Prybar(selector){
       return self.selector;
     }
   }
+
 
   function cloneSvg(){
     // Adapted from SVG Crowbar
@@ -78,6 +80,7 @@ function Prybar(selector){
     return svgCopy
   }
 
+
   function initCanvas(){
     var svg = self.getSvg(),
         svgBBox = svg.getBoundingClientRect(),
@@ -88,6 +91,7 @@ function Prybar(selector){
 
     return canvas
   }
+
 
   function drawCanvas(callback){
     var svgSource = svgToSource(),
@@ -110,9 +114,11 @@ function Prybar(selector){
     return canvas
   }
 
+
   function svgToCanvas(){
     return drawCanvas()
   }
+
 
   function svgToImage(){
     var $img = document.createElement('img');
@@ -122,11 +128,13 @@ function Prybar(selector){
     return $img
   }
 
+
   function svgToSource(){
     var svg = cloneSvg(),
         serializer = new XMLSerializer();
     return serializer.serializeToString(svg)
   }
+
 
   function dataURLtoBlob(dataURL){
     // c.f. https://github.com/blueimp/JavaScript-Canvas-to-Blob
@@ -155,6 +163,7 @@ function Prybar(selector){
     return NewBlob(hasArrayBufferViewSupport ? intArray : arrayBuffer, mediaType)
   }
 
+
   function downloadDataURL(dataURL, filename){
     if (navigator.msSaveBlob){
       var blob = dataURLtoBlob(dataURL);
@@ -170,6 +179,7 @@ function Prybar(selector){
     }
   }
 
+
   var $plotWindow;
   function popoutDataURL(dataURL){
     // Probably want a more complete HTML template here
@@ -180,6 +190,7 @@ function Prybar(selector){
         '<p>Right click on the image above and select "Save image as..."</p>');
     $plotWindow.document.write('</body>');
   }
+
 
   function exportDataURL(dataURL, filename){
     try {
@@ -192,65 +203,51 @@ function Prybar(selector){
     }
   }
 
-  /********************/
-  /* Public interface */
-  /********************/
 
-  this.selector = selector;
+  // Export functions
 
-  this.getSvg = getSvg;
 
-  this.clone = cloneSvg;
-
-  this.drawCanvas = drawCanvas;
-
-  this.toCanvas = svgToCanvas;
-
-  this.toImage = svgToImage;
-
-  this.toSource = svgToSource;
-
-  // Exporters
-
-  this.exportPng = function(filename, options){
+  function exportPng(filename, options){
+    /*
+    var myOptions = {
+      exporter: undefined,
+      bg: undefined,
+      converter: undefined,
+    };
+    */
     try {
       NewBlob();
     } catch (err) {
       throw 'No Blob support present; PNG export is disabled.'
     }
 
-    // Default options, get overridden by supplied options
-    var myOptions = {
-      // default export method is to try download, with popout as fallback
-      exporter: exportDataURL,
-      bg: null,
-      converter: null,
-    };
-
-    Object.assign(myOptions, options);
-
     var dataExporter;
-    if (typeof(myOptions.exporter) === 'function'){
-      dataExporter = myOptions.exporter;
-    } else if (myOptions.exporter.toLowerCase &&
-               myOptions.exporter.toLowerCase() == 'download'){
+    if (!options.exporter){
+      // default is to use exportDataURL which tries download with popout as a
+      // fallback
+      dataExporter = exportDataURL;
+    } else if (typeof(options.exporter) === 'function'){
+      dataExporter = options.exporter;
+    } else if (options.exporter.toLowerCase &&
+               options.exporter.toLowerCase() == 'download'){
       dataExporter = downloadDataURL;
-    } else if (myOptions.exporter.toLowerCase &&
-               myOptions.exporter.toLowerCase() == 'popout'){
+    } else if (options.exporter.toLowerCase &&
+               options.exporter.toLowerCase() == 'popout'){
       dataExporter = popoutDataURL;
     } else {
-      throw "Invalid value for 'exporter': " + myOptions.exporter;
+      throw "Invalid value for 'exporter': " + options.exporter;
     }
 
-    var useCanvg = (myOptions.converter &&
-                    myOptions.converter.toLowerCase &&
-                    myOptions.converter.toLowerCase() == 'canvg');
+    // default is to use native (should it be? canvg has better compat...)
+    var useCanvg = (options.converter &&
+                    options.converter.toLowerCase &&
+                    options.converter.toLowerCase() == 'canvg');
 
     function _exportCanvas(canvas){
-      if (myOptions.bg && typeof(myOptions.bg) === 'string'){
+      if (options.bg && typeof(options.bg) === 'string'){
         var ctx = canvas.getContext('2d');
         ctx.globalCompositeOperation = 'destination-over';
-        ctx.fillStyle = myOptions.bg;
+        ctx.fillStyle = options.bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       var dataURL = canvas.toDataURL('image/png');
@@ -278,10 +275,10 @@ function Prybar(selector){
     }
 
     useCanvg ? exportCanvg() : exportNative();
-
   }
 
-  this.exportSvg = function(filename){
+
+  function exportSvg(filename){
     var svgSource = svgToSource(),
         // This could also be done with Blob * ObjectURL
         dataURL = 'data:image/svg+xml;charset=utf-8,' +
@@ -293,6 +290,30 @@ function Prybar(selector){
 
     exportDataURL(dataURL, filename);
   }
+
+
+  /********************/
+  /* Public interface */
+  /********************/
+
+
+  this.selector = selector;
+
+  this.getSvg = getSvg;
+
+  this.clone = cloneSvg;
+
+  this.drawCanvas = drawCanvas;
+
+  this.exportPng = exportPng;
+
+  this.exportSvg = exportSvg;
+
+  this.toCanvas = svgToCanvas;
+
+  this.toImage = svgToImage;
+
+  this.toSource = svgToSource;
 }
 
 // Polyfill for Blob constructor
@@ -312,23 +333,4 @@ var NewBlob = function(data, datatype){
     }
   }
   return blob
-}
-
-Object.assign = Object.assign || function(target) {
-  if (target == null) {
-    throw new TypeError('Cannot convert undefined or null to object');
-  }
-
-  target = Object(target);
-  for (var index = 1; index < arguments.length; index++) {
-    var source = arguments[index];
-    if (source != null) {
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-  }
-  return target;
 };
