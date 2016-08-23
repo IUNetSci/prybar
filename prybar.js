@@ -31,7 +31,9 @@ function Prybar(selector){
               var styleStr = getExplicitStyle(child, function(k, v){
                 return v !== oNodeStyleComputed.getPropertyValue(k)
               });
-              newChild.setAttribute('style', styleStr);
+              if (!!styleStr){
+                newChild.setAttribute('style', styleStr);
+              }
             }
             cNode.appendChild(newChild);
             if (isElement){
