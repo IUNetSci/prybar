@@ -258,11 +258,15 @@ function Prybar(selector){
                     options.converter.toLowerCase() == 'canvg');
 
     function _exportCanvas(canvas){
-      if (options.bg && typeof(options.bg) === 'string'){
+      if (options.bg){
         var ctx = canvas.getContext('2d');
         ctx.globalCompositeOperation = 'destination-over';
-        ctx.fillStyle = options.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (typeof(options.bg) === 'string'){
+          ctx.fillStyle = options.bg;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.drawImage(options.bg, 0, 0, canvas.width, canvas.height);
+        }
       }
       var dataURL = canvas.toDataURL('image/png');
       dataExporter(dataURL, filename);
@@ -313,7 +317,32 @@ function Prybar(selector){
     } else {
       throw "Invalid value for 'exporter': " + options.exporter;
     }
-    var svgSource = svgToSource(),
+
+    var svg = cloneSvg(),
+        serializer = new XMLSerializer();
+
+    if (options.bg){
+      if(typeof(options.bg) === 'string'){
+        svg.style.background = options.bg;
+      } else {
+        var canvas = initCanvas(),
+            ctx = canvas.getContext('2d');
+        ctx.drawImage(options.bg, 0, 0, canvas.width, canvas.height);
+
+        var dataURL = canvas.toDataURL('image/png'),
+            $image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        $image.setAttribute('href', dataURL);
+        $image.setAttribute('width', canvas.width + 'px');
+        $image.setAttribute('height', canvas.height + 'px');
+        if(svg.firstChild){
+          svg.insertBefore($image, svg.firstChild);
+        } else {
+          svg.appendChild($image);
+        }
+      }
+    }
+
+    var svgSource = serializer.serializeToString(svg),
         // This could also be done with Blob * ObjectURL
         dataURL = 'data:image/svg+xml;charset=utf-8,' +
           encodeURIComponent(svgSource);
