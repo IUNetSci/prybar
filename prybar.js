@@ -15,7 +15,11 @@ function Prybar(selector){
     // Adapted from SVG Crowbar
     // https://github.com/NYTimes/svg-crowbar/blob/gh-pages/svg-crowbar-2.js
 
-    function copyWithStyle(oNode, cNode) {
+    function copyWithStyle(oNode, cNode, copyRootNodeStyle) {
+      if (copyRootNodeStyle){
+        cNode.setAttribute('style', getExplicitStyle(oNode));
+      }
+      var oNodeStyleComputed = getComputedStyle(oNode);
       if (oNode && oNode.hasChildNodes()) {
         var child = oNode.firstChild;
         while (child) {
@@ -24,7 +28,10 @@ function Prybar(selector){
           if (isElement || isText) {
             var newChild = child.cloneNode();
             if (isElement){
-              newChild.setAttribute('style', getExplicitStyle(child));
+              var styleStr = getExplicitStyle(child, function(k, v){
+                return v !== oNodeStyleComputed.getPropertyValue(k)
+              });
+              newChild.setAttribute('style', styleStr);
             }
             cNode.appendChild(newChild);
             if (isElement){
@@ -36,14 +43,19 @@ function Prybar(selector){
       }
     }
 
-    function getExplicitStyle (element) {
+    function getExplicitStyle (element, filter) {
       var cSSStyleDeclarationComputed = getComputedStyle(element);
       var i, len, key, value;
       var computedStyleStr = "";
+      if (arguments.length == 1){
+        filter = function(){ return true }
+      } else if (typeof filter !== 'function'){
+        filter = function(){ return !!filter }
+      }
       for (i=0, len=cSSStyleDeclarationComputed.length; i<len; i++) {
         key=cSSStyleDeclarationComputed[i];
         value=cSSStyleDeclarationComputed.getPropertyValue(key);
-        if (value!==svgDeclarationComputed.getPropertyValue(key)) {
+        if (filter(key, value)) {
           computedStyleStr+=key+":"+value+";";
         }
       }
@@ -75,7 +87,7 @@ function Prybar(selector){
       svgCopy.setAttributeNS(prefix.xmlns, "xmlns:xlink", prefix.xlink);
     }
 
-    copyWithStyle(svgOrig, svgCopy);
+    copyWithStyle(svgOrig, svgCopy, true);
 
     return svgCopy
   }
