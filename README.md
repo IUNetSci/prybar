@@ -11,7 +11,7 @@ Export SVG images from the web as .png or .svg files. Adapted from
   - `<canvas>`
   - `<img>`
 
-## Browser support
+### Browser support
 
 * Chrome (versions?)
 * Firefox (42+?)
