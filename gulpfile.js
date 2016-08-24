@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var del = require('del');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
@@ -50,4 +51,13 @@ gulp.task('example', ['build'], function(){
         }
       }
     }));
+});
+
+gulp.task('clean', function(){
+  return del([
+    BUILD,
+    DIST,
+    EXAMPLES + BUILD,
+    EXAMPLES + DIST
+  ]);
 });
