@@ -2,7 +2,7 @@
   "name": "prybar",
   "description": "Export browser-created SVGs",
   "keywords": ["svg", "export", "canvg"],
-  "main": "prybar.js",
+  "main": "dist/prybar.js",
   "authors": [
     "Clayton A Davis"
   ],
