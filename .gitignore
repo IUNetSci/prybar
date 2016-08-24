@@ -1,3 +1,6 @@
+# Files from `gulp build`
+build
+
 # Logs
 logs
 *.log

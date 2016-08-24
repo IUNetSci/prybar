@@ -6,6 +6,7 @@ var webserver = require('gulp-webserver');
 
 var BUILD = 'build/';
 var DIST = 'dist/';
+var EXAMPLES = 'examples/';
 
 
 gulp.task('default', ['build', 'dist']);
@@ -32,20 +33,21 @@ gulp.task('dist', ['build'], function(){
     ;
 });
 
-gulp.task('example', function(){
-  gulp.src('examples')
+gulp.task('example', ['build'], function(){
+  gulp.src(BUILD + '*')
+    .pipe(gulp.dest(EXAMPLES + 'build/'));
+  gulp.src(EXAMPLES)
     .pipe(webserver({
       open: true,
       livereload: true,
       directoryListing: {
         enable: true,
-        path: './examples/',
+        path: './' + EXAMPLES,
         options: {
           filter: function(filename, index, files, dir){
             return !!filename.match(/\.html$/)
           }
         }
-      },
-      open: true
+      }
     }));
 });
