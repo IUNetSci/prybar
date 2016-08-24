@@ -23,6 +23,7 @@
     "canvg": "git+https://github.com/gabelerner/canvg.git#f5519bc910ecefe083f636707b27e436386fdeed"
   },
   "devDependencies": {
+    "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
     "gulp-minify": "0.0.14",
