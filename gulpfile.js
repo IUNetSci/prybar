@@ -19,7 +19,7 @@ gulp.task('build', function(){
   ];
   return gulp.src(BUILD_FILES)
     .pipe(gulp.dest(BUILD))
-    .pipe(concat('prybar.all.js'))
+    .pipe(concat('prybar.bundle.js'))
     .pipe(gulp.dest(BUILD))
     .pipe(uglify())
     .pipe(rename({extname: '.min.js'}))
