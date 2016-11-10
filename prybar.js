@@ -269,6 +269,9 @@ function Prybar(selector){
         }
       }
       var dataURL = canvas.toDataURL('image/png');
+      if(filename.indexOf('.') == -1){
+        filename += '.png';
+      }
       dataExporter(dataURL, filename);
     }
 
