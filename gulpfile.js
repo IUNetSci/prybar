@@ -40,6 +40,7 @@ gulp.task('example', ['build'], function(){
   gulp.src(EXAMPLES)
     .pipe(webserver({
       open: true,
+      port: 8001,
       livereload: true,
       directoryListing: {
         enable: true,

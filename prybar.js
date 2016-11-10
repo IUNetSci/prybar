@@ -89,7 +89,7 @@ function Prybar(selector){
       svgCopy.setAttributeNS(prefix.xmlns, "xmlns:xlink", prefix.xlink);
     }
 
-    copyWithStyle(svgOrig, svgCopy, true);
+    copyWithStyle(svgOrig, svgCopy, false);
 
     return svgCopy
   }
@@ -275,8 +275,9 @@ function Prybar(selector){
     function exportCanvg(){
       var canvas = initCanvas(),
           svgSource = svgToSource();
-      canvg(canvas, svgSource);
-      _exportCanvas(canvas);
+      canvg(canvas, svgSource, {renderCallback:
+        function(){ _exportCanvas(canvas) }
+      });
     }
 
     function exportNative(){
